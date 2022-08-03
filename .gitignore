@@ -1,0 +1,7 @@
+__pycache__/
+module/
+repo/
+release/
+venv/
+
+config.ini
