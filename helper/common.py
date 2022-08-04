@@ -143,10 +143,14 @@ def push_vercode(file_path: str, inc: int = 1) -> bool:
         versioncode = "0".join(map(str, ver))
         ver = f"v{'.'.join(map(str,ver))}"
 
+        old_ver = con_dict["version"]
+        old_versioncode = con_dict["versionCode"]
         con_dict["version"] = ver
         con_dict["versionCode"] = versioncode
+        print(f"Update version: {old_ver} \u2192 {ver}")
+        print(f"Update versionCode: {old_versioncode} \u2192 {versioncode}")
 
-        print(con_dict)
         f.seek(0, 0)
         for i in con_dict:
             f.write(f"{i}={con_dict[i]}\n")
+    return True

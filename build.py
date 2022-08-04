@@ -12,7 +12,7 @@ from helper.download import *
 import helper.custom
 
 
-def setup(file_path: str) -> configparser.ConfigParser:
+def setup(file_path:str) -> configparser.ConfigParser:
     config = read_ini(file_path)
     mkdirs(config["Paths"])
     return config
