@@ -3,4 +3,4 @@ name=IUDroid
 version=v1.0.0
 versionCode=10000
 author=jamestansx
-description=WIP
+description=A customizable system app installer with microG, pseudo-debloat, utilities, etc...

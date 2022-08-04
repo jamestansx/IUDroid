@@ -2,14 +2,15 @@ import os
 import shutil
 import zipfile
 
-def extract_jar(file_path:str, target_file:str) -> bool:
+
+def extract_jar(file_path: str, target_file: str) -> bool:
     file_dir = os.path.dirname(file_path)
 
     try:
-        with zipfile.ZipFile(file_path, 'r') as zf, open(target_file, 'wb') as f:
+        with zipfile.ZipFile(file_path, "r") as zf, open(target_file, "wb") as f:
             zfl = zf.infolist()
             for i in zfl:
-                if i.filename.endswith('.jar'):
+                if i.filename.endswith(".jar"):
                     print(f"Extract file: {i.filename}")
                     shutil.copyfileobj(zf.open(i.filename), f)
     except Exception as e:
@@ -18,4 +19,3 @@ def extract_jar(file_path:str, target_file:str) -> bool:
         return False
     os.remove(file_path)
     return True
-
