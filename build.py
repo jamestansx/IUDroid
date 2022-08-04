@@ -83,9 +83,12 @@ if __name__ == "__main__":
     config = setup(args.config)
 
     if args.delete:
-        shutil.rmtree(config.get("Paths", "module"))
+        for i in ["module", "repo", "release"]:
+            d = config.get("Paths", i)
+            print(f"Deleting {d}")
+            shutil.rmtree(d)
 
-    if args.build or args.push_ver:
+    if args.push_ver:
         module_file = "module.prop"
         push_vercode(os.path.join("src", module_file))
 
@@ -94,7 +97,7 @@ if __name__ == "__main__":
 
     if args.update_indices or args.build:
         for repo in config["Repos"]:
-            print("* Updating {repo}")
+            print(f"* Updating {repo}")
             print_progress(download_index( repo, config.get("Repos", repo), config.get("Paths", "repo")), f"Update {repo}")
 
     if args.download_apps or args.build:
@@ -118,21 +121,21 @@ if __name__ == "__main__":
         privapp_dir = pathlib.Path(config.get("Paths", "privapp"))
         for file in privapp_dir.rglob('*'):
             if file.is_file() and str(file).split('.')[-1] == "apk":
-                print("* Writing priv-app permission {file}")
+                print(f"* Writing priv-app permission {file}")
                 print_progress(create_privapp_permissions_whitelist(
                         file, 
                         config.get("Paths", "permissions"),
                         ), f"Priv-app Permission {file}")
 
     if args.write_replace_list or args.build:
-        print("* Writing replace list to customize.sh")
+        print(f"* Writing replace list to customize.sh")
         print_progress(create_replace_list(
             parse_replace(config["Replace"]), 
             os.path.join(config.get("Paths", "module"), "customize.sh")
         ), f"Write replace list")
     
     if args.zip or args.build:
-        print("* Zipping Magisk module")
+        print(f"* Zipping Magisk module")
         print_progress(zip_module(config.get("Paths", "module"), os.path.join(config.get("Paths", "release"), "IUDroid.zip")), f"Zip module")
         
     print("Exiting...")

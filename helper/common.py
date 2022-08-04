@@ -8,13 +8,13 @@ import zipfile
 from androguard.misc import AnalyzeAPK
 
 def mkdir(directory) -> None:
-    if directory:
+    if directory and not os.path.isdir(directory):
         print(f"mkdir {directory}")
         os.makedirs(directory, exist_ok=True)
 
 def mkdirs(directory_dict: dict) -> None:
     for d in directory_dict:
-        if directory_dict[d]:
+        if directory_dict[d] and not os.path.isdir(directory_dict[d]):
             print(f"mkdir {directory_dict[d]} ({d})")
             os.makedirs(directory_dict[d], exist_ok=True)
 
