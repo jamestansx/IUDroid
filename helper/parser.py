@@ -70,3 +70,24 @@ def parse_github_latest_release_url(repo_info: str, app_type: str) -> str:
             if release["name"].split(".")[-1] != app_type:
                 continue
             return release["browser_download_url"]
+
+
+def parse_github_pre_release_url(repo_info: str, app_type: str) -> str:
+    api_url = f"{github_api_url}{repo_info}/releases"
+
+    with urllib.request.urlopen(api_url) as response:
+        res_json = json.loads(response.read().decode())
+        for index, value in enumerate(res_json):
+            if value["prerelease"]:
+                for release in value["assets"]:
+                    if release["name"].split(".")[-1] != app_type:
+                        continue
+                    return release["browser_download_url"]
+
+
+def parse_gitlab_release_url(
+    repo_info: str, app_type: str, release_type: str = "latest"
+) -> str:
+    if release_type == "latest":
+        return parse_github_latest_release_url(repo_info, app_type)
+    return parse_github_pre_release_url(repo_info, app_type)

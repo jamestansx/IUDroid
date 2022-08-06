@@ -40,62 +40,76 @@ def download_index(repo_name: str, repo_url: str, dest_dir: str) -> bool:
     return True
 
 
-def download_app(
-    filename: str, download_type: str, raw_info: str, dest_dir: str, config=None
-) -> bool:
-    download_url = str()
-    app_type = "apk"
-    dest_dir = os.path.join(dest_dir, filename)
-    mkdir(dest_dir)
-    shasum = None
-
-    if download_type.lower() == "github":
-        repo_info, app_type = raw_info.split(":")
-        download_url = parse_github_latest_release_url(repo_info, app_type)
-    elif download_type.lower() == "gitlab":
-        repo_info, app_type = raw_info.split(":")
-        ver_tag = parse_gitlab_latest_tag(repo_info)
-        download_url = parse_gitlab_release_url(repo_info, ver_tag, app_type)
-    else:
-        repo_index_path = os.path.join(
-            config.get("Paths", "repo"),
-            f"{download_type}.json",
-        )
-        apk_name, shasum = get_apk_info(repo_index_path, raw_info)
-        repo_url = config.get("Repos", download_type)
-        repo_url += "/" if repo_url[-1] != "/" else ""
-        download_url = f"{repo_url}{apk_name}"
-
-    dest_path = os.path.join(dest_dir, f"{filename}.{app_type}")
-
-    if (
-        download(download_url, dest_path)
-        and shasum is not None
-        and not check_sha256(dest_path, shasum)
-    ):
-        return False
-
-    return install_lib(dest_path, dest_dir)
-
-
 def download_custom(
     download_type: str, raw_info: str, filename: str, dest_dir: str
 ) -> bool:
-    download_url = str()
-    dest_path = os.path.join(dest_dir, filename)
-
-    if download_type.lower() == "github":
-        repo_info, app_type = raw_info.split(":")
-        download_url = parse_github_latest_release_url(repo_info, app_type)
-    elif download_type.lower() == "ghfile":
-        repo_info, file_path = raw_info.split(":")
-        github_raw_domain = "raw.githubusercontent.com"
-        repo_branch = "master"
-        download_url = (
-            f"https://{github_raw_domain}/{repo_info}/{repo_branch}/{file_path}"
-        )
-    else:
+    if download_type != "github":
         print(f"{download_type} is not supported yet")
         return False
 
+    github_raw_domain = "raw.githubusercontent.com"
+    repo_branch = "master"
+    dest_path = os.path.join(dest_dir, filename)
+    repo_info, url_path = raw_info.split(":")
+    download_url = f"https://{github_raw_domain}/{repo_info}/{repo_branch}/{url_path}"
     return download(download_url, dest_path)
+
+
+def download_app_repo(
+    filename: str, repo_name: str, apk_name: str, dest_dir: str, config
+) -> bool:
+    dest_dir = os.path.join(dest_dir, filename)
+    mkdir(dest_dir)
+    repo_index_path = os.path.join(
+        config.get("Paths", "repo"),
+        f"{repo_name}.json",
+    )
+    apk_name, shasum = get_apk_info(repo_index_path, apk_name)
+    repo_url = config.get("Repos", repo_name)
+    repo_url += "/" if repo_url[-1] != "/" else ""
+    download_url = f"{repo_url}{apk_name}"
+    dest_path = os.path.join(dest_dir, f"{filename}.apk")
+
+    if download(download_url, dest_path) and check_sha256(dest_path, shasum):
+        return install_lib(dest_path, dest_dir)
+    return False
+
+
+def download_app_git(
+    filename: str, git_type: str, raw_info: str, dest_dir: str, release_type: str
+) -> bool:
+    dest_dir = os.path.join(dest_dir, filename)
+    mkdir(dest_dir)
+    repo_info, app_type = raw_info.split(":")
+
+    if git_type.lower() == "github":
+        download_url = parse_github_release_url(repo_info, app_type, release_type)
+
+    if git_type.lower() == "gitlab":
+        ver_tag = parse_gitlab_latest_tag(repo_info)
+        download_url = parse_gitlab_release_url(repo_info, ver_tag, app_type)
+
+    dest_path = os.path.join(dest_dir, f"{filename}.{app_type}")
+
+    is_downloaded = download(download_url, dest_path)
+
+    if is_downloaded and app_type == "apk":
+        return install_lib(dest_path, dest_dir)
+    return is_downloaded
+
+
+def download_app(
+    filename: str, download_type: str, raw_info: str, dest_dir: str, choice
+) -> bool:
+    if download_type.lower() in ["github", "gitlab"]:
+        return download_app_git(filename, download_type, raw_info, dest_dir, choice)
+    return download_app_repo(filename, download_type, raw_info, dest_dir, choice)
+
+
+def download_framework(
+    filename: str, git_type: str, raw_info: str, target_file: str, dest_dir: str
+):
+    if download_app_git(filename, git_type, raw_info, dest_dir):
+        _, app_type = raw_info.split(":")
+        file_path = os.path.join(dest_dir, f"{filename}.{app_type}")
+        return extract_jar(file_path, target_file)

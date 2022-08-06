@@ -9,10 +9,9 @@ from distutils.dir_util import copy_tree
 from helper.common import *
 from helper.config import *
 from helper.download import *
-import helper.custom
 
 
-def setup(file_path:str) -> configparser.ConfigParser:
+def setup(file_path: str) -> configparser.ConfigParser:
     config = read_ini(file_path)
     mkdirs(config["Paths"])
     return config
@@ -108,24 +107,31 @@ if __name__ == "__main__":
             )
 
     if args.download_apps or args.build:
-        for custom in config["Custom"]:
-            custom_func = None
-            print(f"* Downloading {custom}")
-            param = config.get("Custom", custom).split(";")
-            if len(param) > 4:
-                custom_func = param.pop().split(":")
-            print_progress(download_custom(*param), f"Download {custom}")
-            if custom_func is not None:
-                file_path = os.path.join(param[3], param[2])
-                target_file = os.path.join(param[3], custom_func[1])
-                getattr(helper.custom, custom_func[0])(file_path, target_file)
-
-        for app in config["Apps"]:
+        for app in config["Apps_Repo"]:
             print(f"* Downloading {app}")
             print_progress(
-                download_app(app, *config.get("Apps", app).split(";"), config),
+                download_app(app, *config.get("Apps_Repo", app).split(";"), config),
                 f"Download {app}",
             )
+
+        for app in config["Apps_Git"]:
+            print(f"* Downloading {app}")
+            print_progress(
+                download_app(app, *config.get("Apps_Git", app).split(";"), config),
+                f"Download {app}",
+            )
+
+        for framework in config["Framework"]:
+            print(f"* Downloading {framework}")
+            print_progress(
+                download_framework(app, *config.get("Framework", app).split(";")),
+                f"Download {framework}",
+            )
+
+        for custom in config["Custom"]:
+            print(f"* Downloading {custom}")
+            param = config.get("Custom", custom).split(";")
+            print_progress(download_custom(*param), f"Download {custom}")
 
     if args.write_perm or args.build:
         privapp_dir = pathlib.Path(config.get("Paths", "privapp"))

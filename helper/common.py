@@ -154,3 +154,19 @@ def push_vercode(file_path: str, inc: int = 1) -> bool:
         for i in con_dict:
             f.write(f"{i}={con_dict[i]}\n")
     return True
+
+
+def extract_jar(file_path: str, target_file: str) -> bool:
+    try:
+        with zipfile.ZipFile(file_path, "r") as zf, open(target_file, "wb") as f:
+            zfl = zf.infolist()
+            for i in zfl:
+                if i.filename.endswith(".jar"):
+                    print(f"Extract file: {i.filename}")
+                    shutil.copyfileobj(zf.open(i.filename), f)
+    except Exception as e:
+        print("Error occur during zip...")
+        print(f"Error message:\n{e}")
+        return False
+    os.remove(file_path)
+    return True

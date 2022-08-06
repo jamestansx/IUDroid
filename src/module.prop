@@ -1,6 +1,6 @@
 id=IUDroid
 name=IUDroid
-version=v1.0.1
-versionCode=10001
+version=v1.0.2
+versionCode=10002
 author=jamestansx
 description=A customizable system app installer with microG, pseudo-debloat, utilities, etc...
