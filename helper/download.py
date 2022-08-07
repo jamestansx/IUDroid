@@ -114,4 +114,4 @@ def download_framework(
         target_file = os.path.join(dest_dir, target_file)
         dest_dir = os.path.join(dest_dir, filename)
         file_path = os.path.join(dest_dir, f"{filename}.{app_type}")
-        return extract_jar(file_path, target_file)
+        return extract_jar(file_path, target_file) and os.rmdir(os.path.dirname(file_path))
