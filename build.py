@@ -107,24 +107,24 @@ if __name__ == "__main__":
             )
 
     if args.download_apps or args.build:
-        for app in config["Apps_Repo"]:
-            print(f"* Downloading {app}")
+        for appr in config["Apps_Repo"]:
+            print(f"* Downloading {appr}")
             print_progress(
-                download_app(app, *config.get("Apps_Repo", app).split(";"), config),
-                f"Download {app}",
+                download_app(appr, *config.get("Apps_Repo", appr).split(";"), config),
+                f"Download {appr}",
             )
 
-        for app in config["Apps_Git"]:
-            print(f"* Downloading {app}")
+        for appg in config["Apps_Git"]:
+            print(f"* Downloading {appg}")
             print_progress(
-                download_app(app, *config.get("Apps_Git", app).split(";"), config),
-                f"Download {app}",
+                download_app(appg, *config.get("Apps_Git", appg).split(";")),
+                f"Download {appg}",
             )
 
         for framework in config["Framework"]:
             print(f"* Downloading {framework}")
             print_progress(
-                download_framework(app, *config.get("Framework", app).split(";")),
+                download_framework(framework, *config.get("Framework", framework).split(";")),
                 f"Download {framework}",
             )
 

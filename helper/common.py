@@ -105,7 +105,7 @@ def zip_module(module_dir: str, dest_path: str) -> bool:
 
 
 def print_progress(stat: bool, message: str) -> None:
-    status = "\u2713" if stat else "\u274C"
+    status = "\u2705" if stat else "\u274C"
     print(f"{message}: {status}")
 
 

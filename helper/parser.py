@@ -85,7 +85,7 @@ def parse_github_pre_release_url(repo_info: str, app_type: str) -> str:
                     return release["browser_download_url"]
 
 
-def parse_gitlab_release_url(
+def parse_github_release_url(
     repo_info: str, app_type: str, release_type: str = "latest"
 ) -> str:
     if release_type == "latest":

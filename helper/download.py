@@ -107,9 +107,11 @@ def download_app(
 
 
 def download_framework(
-    filename: str, git_type: str, raw_info: str, target_file: str, dest_dir: str
+        filename: str, git_type: str, raw_info: str, target_file: str, dest_dir: str, release_type: str
 ):
-    if download_app_git(filename, git_type, raw_info, dest_dir):
+    if download_app_git(filename, git_type, raw_info, dest_dir, release_type):
         _, app_type = raw_info.split(":")
+        target_file = os.path.join(dest_dir, target_file)
+        dest_dir = os.path.join(dest_dir, filename)
         file_path = os.path.join(dest_dir, f"{filename}.{app_type}")
         return extract_jar(file_path, target_file)
