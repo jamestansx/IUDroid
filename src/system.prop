@@ -1,0 +1,5 @@
+# Config rendering pipeline later on customize
+debug.hwui.renderer=skiavk
+
+# Enable usage of dex2oat64 to better dexopt time
+dalvik.vm.dex2oat64.enabled=true
