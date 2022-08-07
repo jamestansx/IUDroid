@@ -12,5 +12,4 @@ A customizable system app installer with microG, pseudo-debloat, utilities, etc.
 - **@JonForShort** for `aapt`
 - **@veez21** for `systemize`
 - **@ale5000** for microG permissions list
-
-
+- **@pedrozzz0** for `ktsrmenu`
