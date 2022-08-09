@@ -107,7 +107,12 @@ def download_app(
 
 
 def download_framework(
-        filename: str, git_type: str, raw_info: str, target_file: str, dest_dir: str, release_type: str
+    filename: str,
+    git_type: str,
+    raw_info: str,
+    target_file: str,
+    dest_dir: str,
+    release_type: str,
 ):
     if download_app_git(filename, git_type, raw_info, dest_dir, release_type):
         _, app_type = raw_info.split(":")

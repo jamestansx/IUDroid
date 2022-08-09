@@ -126,7 +126,9 @@ if __name__ == "__main__":
         for framework in config["Framework"]:
             print(f"* Downloading {framework}")
             print_progress(
-                download_framework(framework, *config.get("Framework", framework).split(";")),
+                download_framework(
+                    framework, *config.get("Framework", framework).split(";")
+                ),
                 f"Download {framework}",
             )
 
