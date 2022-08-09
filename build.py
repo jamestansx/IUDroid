@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import time
 import shutil
 import sys
 
@@ -81,6 +82,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(0)
 
+    start = time.perf_counter()
     config = setup(args.config)
 
     if args.delete:
@@ -166,4 +168,6 @@ if __name__ == "__main__":
             f"Zip module",
         )
 
+    duration = time.perf_counter() - start
+    print(f"--------{duration} seconds--------")
     print("Exiting...")
