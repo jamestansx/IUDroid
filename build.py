@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import asyncio
 import time
 import shutil
 import sys
@@ -17,6 +18,96 @@ def setup(file_path: str) -> configparser.ConfigParser:
     mkdirs(config["Paths"])
     return config
 
+async def main(args):
+    start = time.perf_counter()
+    config = setup(args.config)
+
+    if args.delete:
+        for i in ["module", "repo", "release"]:
+            d = config.get("Paths", i)
+            print(f"Deleting {d}")
+            shutil.rmtree(d)
+
+    if args.push_ver:
+        module_file = "module.prop"
+        push_vercode(os.path.join("src", module_file))
+
+    if args.build:
+        copy_tree("src", config.get("Paths", "module"))
+
+    if args.update_indices or args.build:
+        async_list = []
+        for repo in config["Repos"]:
+            print(f"* Updating {repo}")
+            async_list.append( download_index(
+                    repo, config.get("Repos", repo), config.get("Paths", "repo")
+            ))
+        await asyncio.gather(*async_list)
+
+
+    if args.download_apps or args.build:
+        async_list = []
+        for appr in config["Apps_Repo"]:
+            print(f"* Downloading {appr}")
+            async_list.append(
+                download_app(appr, *config.get("Apps_Repo", appr).split(";"), config))
+
+        for appg in config["Apps_Git"]:
+            print(f"* Downloading {appg}")
+            async_list.append(
+                download_app(appg, *config.get("Apps_Git", appg).split(";"))
+            )
+
+        for framework in config["Framework"]:
+            print(f"* Downloading {framework}")
+            async_list.append(
+                download_framework(
+                    framework, *config.get("Framework", framework).split(";")))
+
+        for custom in config["Custom"]:
+            print(f"* Downloading {custom}")
+            param = config.get("Custom", custom).split(";")
+            async_list.append(download_custom(*param))
+
+        await asyncio.gather(*async_list)
+
+
+    if args.write_perm or args.build:
+        privapp_dir = pathlib.Path(config.get("Paths", "privapp"))
+        for file in privapp_dir.rglob("*"):
+            if file.is_file() and str(file).split(".")[-1] == "apk":
+                print(f"* Writing priv-app permission {file}")
+                print_progress(
+                    create_privapp_permissions_whitelist(
+                        file,
+                        config.get("Paths", "permissions"),
+                    ),
+                    f"Priv-app Permission {file}",
+                )
+
+    if args.write_replace_list or args.build:
+        print(f"* Writing replace list to customize.sh")
+        print_progress(
+            create_replace_list(
+                parse_replace(config["Replace"]),
+                os.path.join(config.get("Paths", "module"), "customize.sh"),
+            ),
+            f"Write replace list",
+        )
+
+    if args.zip or args.build:
+        print(f"* Zipping Magisk module")
+        print_progress(
+            zip_module(
+                config.get("Paths", "module"),
+                os.path.join(config.get("Paths", "release"), "IUDroid.zip"),
+            ),
+            f"Zip module",
+        )
+
+    duration = time.perf_counter() - start
+    print(f"--------{duration} seconds--------")
+    print("Exiting...")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -82,94 +173,4 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(0)
 
-    start = time.perf_counter()
-    config = setup(args.config)
-
-    if args.delete:
-        for i in ["module", "repo", "release"]:
-            d = config.get("Paths", i)
-            print(f"Deleting {d}")
-            shutil.rmtree(d)
-
-    if args.push_ver:
-        module_file = "module.prop"
-        push_vercode(os.path.join("src", module_file))
-
-    if args.build:
-        copy_tree("src", config.get("Paths", "module"))
-
-    if args.update_indices or args.build:
-        for repo in config["Repos"]:
-            print(f"* Updating {repo}")
-            print_progress(
-                download_index(
-                    repo, config.get("Repos", repo), config.get("Paths", "repo")
-                ),
-                f"Update {repo}",
-            )
-
-    if args.download_apps or args.build:
-        for appr in config["Apps_Repo"]:
-            print(f"* Downloading {appr}")
-            print_progress(
-                download_app(appr, *config.get("Apps_Repo", appr).split(";"), config),
-                f"Download {appr}",
-            )
-
-        for appg in config["Apps_Git"]:
-            print(f"* Downloading {appg}")
-            print_progress(
-                download_app(appg, *config.get("Apps_Git", appg).split(";")),
-                f"Download {appg}",
-            )
-
-        for framework in config["Framework"]:
-            print(f"* Downloading {framework}")
-            print_progress(
-                download_framework(
-                    framework, *config.get("Framework", framework).split(";")
-                ),
-                f"Download {framework}",
-            )
-
-        for custom in config["Custom"]:
-            print(f"* Downloading {custom}")
-            param = config.get("Custom", custom).split(";")
-            print_progress(download_custom(*param), f"Download {custom}")
-
-    if args.write_perm or args.build:
-        privapp_dir = pathlib.Path(config.get("Paths", "privapp"))
-        for file in privapp_dir.rglob("*"):
-            if file.is_file() and str(file).split(".")[-1] == "apk":
-                print(f"* Writing priv-app permission {file}")
-                print_progress(
-                    create_privapp_permissions_whitelist(
-                        file,
-                        config.get("Paths", "permissions"),
-                    ),
-                    f"Priv-app Permission {file}",
-                )
-
-    if args.write_replace_list or args.build:
-        print(f"* Writing replace list to customize.sh")
-        print_progress(
-            create_replace_list(
-                parse_replace(config["Replace"]),
-                os.path.join(config.get("Paths", "module"), "customize.sh"),
-            ),
-            f"Write replace list",
-        )
-
-    if args.zip or args.build:
-        print(f"* Zipping Magisk module")
-        print_progress(
-            zip_module(
-                config.get("Paths", "module"),
-                os.path.join(config.get("Paths", "release"), "IUDroid.zip"),
-            ),
-            f"Zip module",
-        )
-
-    duration = time.perf_counter() - start
-    print(f"--------{duration} seconds--------")
-    print("Exiting...")
+    asyncio.run(main(args))
