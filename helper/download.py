@@ -21,6 +21,7 @@ def async_download(download_url: str, dest_path: str) -> bool:
         return False
     return True
 
+
 async def download(download_url: str, dest_path: str) -> bool:
     return await asyncio.to_thread(async_download, download_url, dest_path)
 
@@ -109,9 +110,13 @@ async def download_app(
     filename: str, download_type: str, raw_info: str, dest_dir: str, choice
 ) -> bool:
     if download_type.lower() in ["github", "gitlab"]:
-        status = await download_app_git(filename, download_type, raw_info, dest_dir, choice)
+        status = await download_app_git(
+            filename, download_type, raw_info, dest_dir, choice
+        )
     else:
-        status = await download_app_repo(filename, download_type, raw_info, dest_dir, choice)
+        status = await download_app_repo(
+            filename, download_type, raw_info, dest_dir, choice
+        )
     print_progress(status, f"Download {filename}")
     return status
 
@@ -124,7 +129,9 @@ async def download_framework(
     dest_dir: str,
     release_type: str,
 ) -> bool:
-    status = await download_app_git(filename, git_type, raw_info, dest_dir, release_type)
+    status = await download_app_git(
+        filename, git_type, raw_info, dest_dir, release_type
+    )
     if status:
         _, app_type = raw_info.split(":")
         target_file = os.path.join(dest_dir, target_file)

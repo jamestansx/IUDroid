@@ -18,6 +18,7 @@ def setup(file_path: str) -> configparser.ConfigParser:
     mkdirs(config["Paths"])
     return config
 
+
 async def main(args):
     start = time.perf_counter()
     config = setup(args.config)
@@ -39,18 +40,20 @@ async def main(args):
         async_list = []
         for repo in config["Repos"]:
             print(f"* Updating {repo}")
-            async_list.append( download_index(
+            async_list.append(
+                download_index(
                     repo, config.get("Repos", repo), config.get("Paths", "repo")
-            ))
+                )
+            )
         await asyncio.gather(*async_list)
-
 
     if args.download_apps or args.build:
         async_list = []
         for appr in config["Apps_Repo"]:
             print(f"* Downloading {appr}")
             async_list.append(
-                download_app(appr, *config.get("Apps_Repo", appr).split(";"), config))
+                download_app(appr, *config.get("Apps_Repo", appr).split(";"), config)
+            )
 
         for appg in config["Apps_Git"]:
             print(f"* Downloading {appg}")
@@ -62,7 +65,9 @@ async def main(args):
             print(f"* Downloading {framework}")
             async_list.append(
                 download_framework(
-                    framework, *config.get("Framework", framework).split(";")))
+                    framework, *config.get("Framework", framework).split(";")
+                )
+            )
 
         for custom in config["Custom"]:
             print(f"* Downloading {custom}")
@@ -70,7 +75,6 @@ async def main(args):
             async_list.append(download_custom(*param))
 
         await asyncio.gather(*async_list)
-
 
     if args.write_perm or args.build:
         privapp_dir = pathlib.Path(config.get("Paths", "privapp"))
@@ -108,6 +112,7 @@ async def main(args):
     duration = time.perf_counter() - start
     print(f"--------{duration} seconds--------")
     print("Exiting...")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
